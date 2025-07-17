@@ -1,0 +1,50 @@
+
+body {
+    background: linear-gradient(to right, #f9fbfd, #e6f0fa);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+}
+.captcha-container {
+    background: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+}
+.captcha-container img {
+    width: 140px;
+    margin-bottom: 20px;
+}
+.captcha-container h4 {
+    color: #0a59a3;
+    margin-bottom: 10px;
+}
+.captcha-container p {
+    color: #555;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+#verify-btn {
+    margin-top: 20px;
+    background-color: #004e9a;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+}
+#verify-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+.checkbox-label {
+    font-size: 0.95rem;
+    color: #333;
+}
